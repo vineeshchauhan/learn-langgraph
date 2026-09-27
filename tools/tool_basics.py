@@ -1,45 +1,35 @@
+## Search Tools
+## Retrieval Tools
+## Calculation Tools
+## Code Execution Tools
+## Data Querying Tools
+## File Manipulation Tools
+## Custom API Tools
+
+import os
+from constants import openai_key
+from constants import openai_base_url
+from langchain_openai import ChatOpenAI
 from typing import TypedDict
 from langchain_core.tools import tool
-from langgraph.graph import END, START, StateGraph
+from langgraph.graph import END, START
+from langgraph.prebuilt import ToolNode
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage, SystemMessage,AIMessage
-from langgraph.prebuild import ToolNode
+from langchain_core.messages import HumanMessage, AIMessage
 import json
 import base64
 
 class StateMessage(TypedDict):
     messages: str
 
-GCP_SERVICE_ACCOUNT_VERTEX_AI=""
-VERTEX_AI_LOCATION="global"
-VERTEX_AI_MODEL="gemini-3.8-flash"
-VERTEX_AI_MAX_TOKENS=4096
-VERTEX_AI_TEMPERATURE=0.7
+os.environ["OPENAI_API_KEY"]=openai_key
+os.environ["OPENAI_BASE_URL"]=openai_base_url
 
-def get_llm() -> ChatGoogleGenerativeAI:
-    if GCP_SERVICE_ACCOUNT_VERTEX_AI:
-        from google.oauth2 import service_account
-
-        # Decode base64 if needed, otherwise treat as raw JSON — both formats are accepted.
-        try:
-            json.loads(GCP_SERVICE_ACCOUNT_VERTEX_AI)
-            credentials_str = GCP_SERVICE_ACCOUNT_VERTEX_AI
-        except json.JSONDecodeError:
-            credentials_str = base64.b64decode(GCP_SERVICE_ACCOUNT_VERTEX_AI).decode("utf-8")
-
-        credentials_info = json.loads(credentials_str)
-        credentials = service_account.Credentials.from_service_account_info(
-            credentials_info,
-            scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-        return ChatGoogleGenerativeAI(
-            model=VERTEX_AI_MODEL,
-            project=credentials_info["project_id"],
-            location=VERTEX_AI_LOCATION,
-            credentials=credentials,
-            temperature=0.7,
-            max_output_tokens=4096,
-        )
+## OPENNAI LLMS
+getllm = ChatOpenAI(
+    temperature=0.7,
+    model="openai/gpt-5-mini"
+)
 
 @tool
 def select_correct_table_for_query(keyword: str) -> str:
@@ -53,9 +43,9 @@ def select_correct_table_for_query(keyword: str) -> str:
 
 
 tools = [select_correct_table_for_query]
-llm = get_llm().bind_tools(tools)
+llm = getllm.bind_tools(tools)
 messages = [
-    HumanMessage("Can you fetch information about the customer with id 123?")
+    HumanMessage("Can you fetch information about the user with id 123?")
 ]
 
 response = llm.invoke(messages)
@@ -69,3 +59,17 @@ if hasattr(response, 'tool_calls') and response.tool_calls:
         print(f"    Args: {tool_call['args']}")
 else:
     print("\nNo tool calls detected")
+
+
+tool_node = ToolNode(tools)
+message_with_tool_call = AIMessage(content="", tool_calls=[{'name': 'select_correct_table_for_query', 
+                                                            'args': {'keyword': 'user'}, 
+                                                            'id': 'call_uFlK3A5vTFkk1TfubDZWlVzf', 
+                                                            'type': 'tool_call'}])
+
+from langgraph.runtime import Runtime
+runtime = Runtime()
+config = {"configurable": {"__pregel_runtime": runtime}}
+resp1 = tool_node.invoke({"messages": [message_with_tool_call]}, config=config)
+
+print(resp1)

@@ -13,3 +13,4 @@ fastapi
 uvicorn
 beautifulsoup4
 langchain_google_genai
+langchain-text-splitters

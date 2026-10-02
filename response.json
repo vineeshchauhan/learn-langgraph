@@ -1,0 +1,149 @@
+{
+  "messages": [
+    {
+      "type": "HumanMessage",
+      "content": "Can you fetch information about the user with id 123? Only return the name of the table and tool used in the output and then Can run the select query for the parameter in the tool call returned table",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "id": "2553b43e-a7ca-426e-9ff5-f31372d1328d"
+    },
+    {
+      "type": "AIMessage",
+      "content": "",
+      "additional_kwargs": {
+        "refusal": null
+      },
+      "response_metadata": {
+        "token_usage": {
+          "completion_tokens": 389,
+          "prompt_tokens": 90,
+          "total_tokens": 479,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": 0,
+            "reasoning_tokens": 320,
+            "rejected_prediction_tokens": null,
+            "text_tokens": null,
+            "image_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cache_write_tokens": 0,
+            "cached_tokens": 0,
+            "image_tokens": null,
+            "text_tokens": null,
+            "video_tokens": 0
+          },
+          "cost": 0.0008005,
+          "is_byok": false,
+          "cost_details": {
+            "upstream_inference_cost": 0.0008005,
+            "upstream_inference_prompt_cost": 0.0000225,
+            "upstream_inference_completions_cost": 0.000778
+          },
+          "model_provider": "openai",
+          "model_name": "openai/gpt-5-mini",
+          "system_fingerprint": null,
+          "id": "gen-1790969697-u8RsaPRI3h9Bc3UD3T4K",
+          "service_tier": "default",
+          "finish_reason": "tool_calls",
+          "logprobs": null
+        },
+        "id": "lc_run--01a0fe1c-d21f-7fe3-8da5-ad349f24df5a-0",
+        "tool_calls": [
+          {
+            "name": "select_correct_table_for_query",
+            "args": {
+              "keyword": "user"
+            },
+            "id": "call_NJexC0isarboZihDSTiPQH37",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+          "input_tokens": 90,
+          "output_tokens": 389,
+          "total_tokens": 479,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 320
+          }
+        }
+      }
+    },
+    {
+      "type": "ToolMessage",
+      "content": "[\"UserInfo\"]",
+      "name": "select_correct_table_for_query",
+      "id": "429d4509-65cf-4151-82f7-159325ce6841",
+      "tool_call_id": "call_NJexC0isarboZihDSTiPQH37"
+    },
+    {
+      "type": "AIMessage",
+      "content": "Table: UserInfo\nTool: functions.select_correct_table_for_query\n\nI cannot execute queries against your database from here. To fetch the user with id 123, run:\nSELECT * FROM UserInfo WHERE id = 123;",
+      "additional_kwargs": {
+        "refusal": null
+      },
+      "response_metadata": {
+        "token_usage": {
+          "completion_tokens": 848,
+          "prompt_tokens": 127,
+          "total_tokens": 975,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": 0,
+            "reasoning_tokens": 768,
+            "rejected_prediction_tokens": null,
+            "text_tokens": null,
+            "image_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cache_write_tokens": 0,
+            "cached_tokens": 0,
+            "image_tokens": null,
+            "text_tokens": null,
+            "video_tokens": 0
+          },
+          "cost": 0.00172775,
+          "is_byok": false,
+          "cost_details": {
+            "upstream_inference_cost": 0.00172775,
+            "upstream_inference_prompt_cost": 0.00003175,
+            "upstream_inference_completions_cost": 0.001696
+          },
+          "model_provider": "openai",
+          "model_name": "openai/gpt-5-mini",
+          "system_fingerprint": null,
+          "id": "gen-1790969701-VegeDjwQ7I7G3lZtnRNY",
+          "service_tier": "default",
+          "finish_reason": "stop",
+          "logprobs": null
+        },
+        "id": "lc_run--01a0fe1c-e2b3-7eb3-a8e5-b6d3dc97cea4-0",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+          "input_tokens": 127,
+          "output_tokens": 848,
+          "total_tokens": 975,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 768
+          }
+        }
+      }
+    }
+  ]
+}

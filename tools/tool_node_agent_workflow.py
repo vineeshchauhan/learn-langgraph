@@ -16,6 +16,8 @@ from langgraph.graph import StateGraph, END, START, MessagesState
 from langgraph.prebuilt import ToolNode
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage
+from langgraph.checkpoint.memory import MemorySaver
+
 import json
 
 ##class StateMessage(TypedDict):
@@ -69,9 +71,26 @@ workflow.add_conditional_edges("agent",should_continue)
 ## the agent can format the response and perform next function.
 workflow.add_edge("tools", "agent") 
 
+config = {"configurable":{"thread_id":"1"}}
+
 messages = [
     HumanMessage(content="Can you fetch information about the user with id 123? Only return the name of the table and tool used in the output")
 ]
 
-response = workflow.compile().invoke({"messages": messages})
-print("\nRespone:", response)
+checkpointer = MemorySaver()
+
+graph = workflow.compile(checkpointer=checkpointer);
+
+graph.invoke({"messages": messages},config)
+#print("\nRespone:", response)
+#print("\nRespone:", response["messages"][-1])
+#print("\nRespone:", response["messages"][-1].content)
+
+messages = [
+    HumanMessage(content="Can run the select query for the parameter in the tool call returned table?")
+]
+
+response1 = graph.invoke({"messages": messages},config)
+print("\nRespone:", response1)
+print("\nRespone:", response1["messages"][-1])
+print("\nRespone:", response1["messages"][-1].content)

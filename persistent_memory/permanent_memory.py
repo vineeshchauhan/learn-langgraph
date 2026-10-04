@@ -10,7 +10,7 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.prebuilt import ToolNode
 from langgraph.types import interrupt, Command
 
-from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.tools import tool
@@ -22,9 +22,14 @@ os.environ["OPENAI_API_KEY"]=openai_key
 os.environ["OPENAI_BASE_URL"]=openai_base_url
 
 ## OPENNAI LLMS
-getllm = ChatOpenAI(
-    temperature=0.7,
-    model="openai/gpt-5-mini"
+#getllm = ChatOpenAI(
+#    temperature=0.7,
+#    model="openai/gpt-5-mini"
+#)
+
+getllm = ChatOllama(
+    model="llama3.2",
+    base_url="http://localhost:11434"
 )
 
 

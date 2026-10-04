@@ -254,3 +254,10 @@ But this changes the working directory, which may affect other path-dependent co
 3. **Use `.env` for secrets:** Never commit API keys to Git
 4. **Consider pyenv:** For managing multiple Python versions on Windows
 5. **Consider pipx:** For installing Python CLI tools globally without affecting project environments
+
+
+---
+## Postgres Setup
+### docker pull postgres:14.24
+### docker run --name postgres-container -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=<same as username> -e POSTGRES_DB=langgraph_memory -p 5432:5432 -d postgres:14.24
+---

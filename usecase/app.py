@@ -1,0 +1,98 @@
+import os
+import chainlit as cl
+from claim_processing_agent import create_workflow  # Replace with your actual graph module
+from langgraph.types import Command
+from constants import openai_key, openai_base_url
+from langchain_openai import ChatOpenAI
+
+os.environ["OPENAI_API_KEY"]=openai_key
+os.environ["OPENAI_BASE_URL"]=openai_base_url
+
+graph = create_workflow()
+
+conversation_stage = "get_patient_id"
+claim_info = {}
+thread = {"configurable": {"thread_id": "101"}}
+
+
+os.environ["OPENAI_API_KEY"]=openai_key
+os.environ["OPENAI_BASE_URL"]=openai_base_url
+
+## OPENNAI LLMS
+getllm = ChatOpenAI(
+    temperature=0.7,
+    model="openai/gpt-5-mini"
+)
+
+@cl.on_chat_start
+async def on_start():
+    global conversation_stage
+    conversation_stage = "get_patient_id"
+    await cl.Message("Welcome to the 💼 Claim Validation Assistant!").send()
+    await cl.Message("🔹 Please enter the **Patient ID**:").send()
+
+
+@cl.on_message
+async def handle_message(message):
+    global conversation_stage, claim_info
+
+    if conversation_stage == "get_patient_id":
+        claim_info["patient_id"] = message.content.strip()
+        await cl.Message("🔹 Enter the **Treatment Code** (e.g., Z12.31):").send()
+        conversation_stage = "get_treatment_code"
+        return
+
+    if conversation_stage == "get_treatment_code":
+        claim_info["treatment_code"] = message.content.strip()
+        await cl.Message("🔹 Enter the **Claim Details**:").send()
+        conversation_stage = "get_claim_details"
+        return
+
+    if conversation_stage == "get_claim_details":
+        claim_info["claim_details"] = message.content.strip()
+        await cl.Message("🧰 Validating claim... Please wait.").send()
+
+        state = graph.invoke(claim_info, config=thread)
+        # TODO: Human In The Loop
+        tasks = graph.get_state(config=thread).tasks
+
+        if tasks:
+            feedback = tasks[0].interrupts[0].value.get("feedback")
+            await cl.Message(f"Human Review Needed: \n\n {feedback}").send()
+            await cl.Message(f"Would you like to approve the claim? (yes/no)").send()
+            conversation_stage = "await_approval"
+            return
+
+        # No interrupt, display results directly
+        await show_results(state)
+        conversation_stage = "restart"
+        return
+
+    if conversation_stage == "await_approval":
+        # TODO: Human In The Loop
+        if message.content.strip().lower() == "yes":
+            state = graph.invoke(Command(resume="Approved"),config=thread)
+        else:
+            state = graph.invoke(Command(resume="Rejected"),config=thread)
+        await cl.Message("Claim stored in database").send()
+        await show_results(state)
+        conversation_stage = "restart"
+        return
+
+    if conversation_stage == "restart" and message.content.strip().lower() == "restart":
+        claim_info = {}
+        conversation_stage = "get_patient_id"
+        await cl.Message("🔄 Restarting process... Please enter the **Patient ID**:").send()
+        return
+
+    await cl.Message("⚠️ I did not understand that. Please follow the instructions.").send()
+
+
+async def show_results(state):
+    await cl.Message("\ud83d\udcc4 **Claim Summary:**").send()
+    await cl.Message(f"\U0001f464 Patient Data:\n{state['patient_data']}").send()
+    await cl.Message(f"\U0001f4b3 Insurance Data:\n{state['insurance_data']}").send()
+    await cl.Message(f"\U0001f4dc Policy Docs:\n{state['policy_docs']}").send()
+    await cl.Message(f"\U0001f916 AI Feedback:\n{state['ai_validation_feedback']}").send()
+    await cl.Message(f"\ud83d\udccc Final Decision: **{state['final_decision']}**").send()
+    await cl.Message("\ud83d\udd04 Type `restart` to process another claim.").send()

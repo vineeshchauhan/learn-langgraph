@@ -33,7 +33,7 @@ getllm = ChatOllama(
 )
 
 
-DB_CONNECTION_STRING = "postgresql://postgres:postgres@localhost:5432/langgraph_memory"
+DB_CONNECTION_STRING = "postgresql://postgres:<password>@localhost:5432/langgraph_memory"
 
 class CodingAssistantState(TypedDict):
     task: str
